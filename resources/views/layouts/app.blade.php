@@ -1,34 +1,32 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>Log Smart</title>
+    <title>@yield('title', 'Log Smart')</title>
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-gHk0rH+6E6pRg+8EfpGL+Ra/0nYFkBPR2qfX3z6gXJKJ2e0C5bH6P7LrYdjKm2mN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<body class="bg-light">
 
-<body>
-    <!-- Header -->
     @include('layouts.header')
 
-    <!-- Main Content -->
-    <main class="flex-grow">
+    <main class="container my-5">
         @yield('content')
     </main>
 
-    <!-- Footer -->
     @include('layouts.footer')
 
     <!-- Bootstrap JS Bundle (com Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MRCkqJ2E+4n1P+H7f2aN4B1w+q3k1FjYg9vYwH3hx1z2k2rYw6w5s7ZP2vM8R9lF" crossorigin="anonymous">
-    </script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Scripts da view / custom JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="{{ asset('js/user.js') }}"></script>
+
+    <!-- Permite que views injetem scripts extras -->
+    @yield('scripts')
+</body>
 </html>
