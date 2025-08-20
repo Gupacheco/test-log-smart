@@ -145,6 +145,6 @@ class UserController extends Controller
                 ->orWhere('email', 'like', '%' . $request->name . '%');
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(3);
+            ->paginate(10);
     }
 }
