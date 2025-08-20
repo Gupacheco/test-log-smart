@@ -26,14 +26,36 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-        ]);
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
+            ], [
+                'name.required' => 'O campo nome é obrigatório.',
+                'email.required' => 'O campo email é obrigatório.',
+                'email.email' => 'O email deve ser válido.',
+                'email.unique' => 'Este email já está sendo utilizado.',
+            ]);
 
-        User::create($data);
+            User::create($data);
 
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
+            return response()->json([
+                'success' => true, 
+                'message' => 'Usuário cadastrado com sucesso!',
+                'redirect' => route('home')
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro de validação',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao cadastrar usuário: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function edit(User $user)
@@ -43,36 +65,86 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-        ]);
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+            ], [
+                'name.required' => 'O campo nome é obrigatório.',
+                'email.required' => 'O campo email é obrigatório.',
+                'email.email' => 'O email deve ser válido.',
+                'email.unique' => 'Este email já está sendo utilizado.',
+            ]);
 
-        $user->update($data);
+            $user->update($data);
 
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+            return response()->json([
+                'success' => true, 
+                'message' => 'Usuário atualizado com sucesso!',
+                'redirect' => route('home')
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro de validação',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar usuário: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function destroy(Request $request)
+    public function destroy(User $user)
     {
-        dd($request->toArray());
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        try {
+            $user->delete();
+            return response()->json(['success' => true, 'message' => 'Usuário excluído com sucesso!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Erro ao excluir usuário: ' . $e->getMessage()], 500);
+        }
     }
 
     public function sortearAmigo()
     {
         $users = User::all();
-        $randomUser = $users->random();
-
-        return view('pages.users.draw_friend', compact('randomUser'));
+        
+        if ($users->count() < 2) {
+            return view('pages.users.draw_friend', compact('users'));
+        }
+        
+        // Faz o sorteio completo
+        $userList = $users->toArray();
+        $shuffledUsers = collect($userList)->shuffle();
+        $pairs = [];
+        
+        // Cria pares de sorteio
+        for ($i = 0; $i < count($userList); $i++) {
+            $currentUser = $userList[$i];
+            $nextIndex = ($i + 1) % count($userList);
+            $drawnUser = $userList[$nextIndex];
+            
+            $pairs[] = [
+                'giver' => $currentUser,
+                'receiver' => $drawnUser
+            ];
+        }
+        
+        // Embaralha os pares para maior aleatoriedade
+        $pairs = collect($pairs)->shuffle();
+        
+        return view('pages.users.draw_friend', compact('pairs', 'users'));
     }
 
     private function getUsers(Request $request)
     {
         return User::when($request->filled('name'), function ($query) use ($request) {
-                $query->where('name', 'like', '%' . $request->name . '%');
+                $query->where('name', 'like', '%' . $request->name . '%')
+                ->orWhere('email', 'like', '%' . $request->name . '%');
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(3);
     }
 }
