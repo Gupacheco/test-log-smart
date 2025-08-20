@@ -1,6 +1,6 @@
 # Test Log Smart
 
-Um projeto Laravel moderno com configuração Docker completa para facilitar o desenvolvimento e deploy.
+Um projeto Laravel moderno com configuração Docker completa para facilitar o desenvolvimento e versionamento.
 
 ## 🚀 Tecnologias
 
